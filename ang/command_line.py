@@ -1,6 +1,10 @@
+from importlib import import_module
+from os import environ
+
 import click
 import uvicorn
-from os import environ
+
+from ang.config import root
 
 
 @click.group()
@@ -15,7 +19,7 @@ def main():
 @click.option('--port', type=int, default=8000)
 @click.option('--reload', type=bool, default=True)
 def serve(**options):
-    from ang.config import root, settings
+    settings = import_module('settings')
     environ['DEBUG'] = '1'
 
     reload_dirs = [root]
