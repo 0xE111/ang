@@ -1,10 +1,12 @@
 import shutil
 from importlib import import_module
-from os import environ
+from os import environ, chdir
 from pathlib import Path
 
 import click
 import uvicorn
+import alembic
+import alembic.config
 
 from ang.config import root
 
@@ -25,10 +27,18 @@ def is_empty(path: Path) -> bool:
 @click.argument('path', type=Path, default=Path('.'))
 @click.option('--force', is_flag=True, default=False)
 def init(path: Path, force: bool):
+
     if path.exists() and (not path.is_dir() or not is_empty(path) and not force):
         raise ValueError('Could not initialize inside non-empty folder')
-
     shutil.copytree(Path(__file__).parent / '_template', path, dirs_exist_ok=True)
+
+    chdir(path)
+    settings = import_module('settings')
+
+    config = alembic.config.Config(path / '_alembic' / 'alembic.ini')
+    # config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+    alembic.command.init(config, path / '_alembic', template='async')
+
     click.echo(f'Initialized empty project at {path}')
 
 
