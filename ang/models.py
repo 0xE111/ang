@@ -1,16 +1,10 @@
-import humps
-# from sqlalchemy import *  # noqa - expose sqlalchemy interface
-# import sqlalchemy.orm  # noqa
-from sqlalchemy import BigInteger, Column
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import synonym
-# from sqlalchemy.ext.hybrid import hybrid_property
+from importlib import import_module
 
-# from envparse import env
-# from sqlalchemy.orm import sessionmaker
-# from sqlalchemy.ext.asyncio import create_async_engine
-# engine = sqlalchemy.create_engine(env('DATABASE_URL'))
-# Session = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+import humps
+from sqlalchemy import BigInteger, Column
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import sessionmaker, synonym
 
 
 class Base:
@@ -21,6 +15,8 @@ class Base:
         if not name.endswith('s'):
             name += 's'
         return name
+
+    __mapper_args__ = {"eager_defaults": True}
 
     @declared_attr
     def id(cls):
@@ -38,3 +34,8 @@ class Base:
 
 
 Model = declarative_base(cls=Base)
+
+
+settings = import_module('settings')
+engine = create_async_engine(settings.DATABASE_URL, echo=True)
+session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
