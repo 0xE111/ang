@@ -1,0 +1,22 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}{% endblock %}</title>
+        <meta name="description" content="{% block description %}{% endblock %}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:title" content="{% block og_title %}{% endblock %}">
+        <meta property="og:type" content="{% block og_type %}{% endblock %}">
+        <meta property="og:url" content="{% block og_url %}{% endblock %}">
+        <meta property="og:image" content="{% block og_image %}{% endblock %}">
+
+        <!-- <link rel="stylesheet" href="/static/core/style.css"> -->
+
+        <meta name="theme-color" content="#fafafa">
+    </head>
+
+    <body>
+        {% block content %}{% endblock %}
+    </body>
+</html>

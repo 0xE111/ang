@@ -1,5 +1,7 @@
+import shutil
 from importlib import import_module
 from os import environ
+from pathlib import Path
 
 import click
 import uvicorn
@@ -12,6 +14,22 @@ def main():
     # settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
     # settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     pass
+
+
+def is_empty(path: Path) -> bool:
+    assert path.is_dir()
+    return not bool(next(path.iterdir(), None))
+
+
+@main.command()
+@click.argument('path', type=Path, default=Path('.'))
+@click.option('--force', is_flag=True, default=False)
+def init(path: Path, force: bool):
+    if path.exists() and (not path.is_dir() or not is_empty(path) and not force):
+        raise ValueError('Could not initialize inside non-empty folder')
+
+    shutil.copytree(Path(__file__).parent / '_template', path, dirs_exist_ok=True)
+    click.echo(f'Initialized empty project at {path}')
 
 
 @main.command()

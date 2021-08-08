@@ -5,9 +5,9 @@ from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 from importlib import import_module
 
-from ang.config import env, settings
+from ang.config import env
 
-
+settings = import_module('settings')
 logging.config.dictConfig(settings.LOGGING)
 log = logging.getLogger(__name__)
 
