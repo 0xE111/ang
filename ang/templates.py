@@ -1,7 +1,7 @@
 from importlib import import_module
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, PrefixLoader, pass_context, select_autoescape
+from jinja2 import Environment, FileSystemLoader, PrefixLoader, pass_context, select_autoescape, StrictUndefined
 from starlette.templating import _TemplateResponse
 
 from ang.config import get_apps
@@ -21,6 +21,7 @@ env = Environment(
         for app in get_apps()
     }),
     autoescape=select_autoescape(),
+    undefined=StrictUndefined,
 )
 env.globals.update({
     'url_for': url_for,
