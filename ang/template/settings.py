@@ -6,8 +6,8 @@ env = Env()
 ROOT = Path(__file__).parent
 
 DATABASE_URL = env('DATABASE_URL', 'postgresql+asyncpg://postgres:postgres@localhost/db')
-STATIC_DIR = env.path('STATIC_DIR', str(ROOT / '_data' / 'static'))
-UPLOAD_DIR = env.path('UPLOAD_DIR', str(ROOT / '_data' / 'upload'))
+STATIC_DIR = env.path('STATIC_DIR', str(ROOT / '.data' / 'static'))
+UPLOAD_DIR = env.path('UPLOAD_DIR', str(ROOT / '.data' / 'upload'))
 
 MIDDLEWARE = []
 
