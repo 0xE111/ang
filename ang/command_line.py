@@ -1,5 +1,4 @@
 import shutil
-from importlib import import_module
 from os import environ, chdir
 from pathlib import Path
 
@@ -7,8 +6,8 @@ import click
 import uvicorn
 import alembic
 import alembic.config
-
-from ang.config import root
+from importlib import import_module
+from ang.config import SETTINGS_MODULE, root
 
 
 @click.group()
@@ -33,7 +32,7 @@ def init(path: Path, force: bool):
     shutil.copytree(Path(__file__).parent / 'template', path, dirs_exist_ok=True)
 
     chdir(path)
-    settings = import_module('settings')
+    settings = import_module(SETTINGS_MODULE)
 
     config = alembic.config.Config(path / '_alembic' / 'alembic.ini')
     # config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
@@ -47,7 +46,7 @@ def init(path: Path, force: bool):
 @click.option('--port', type=int, default=8000)
 @click.option('--reload', type=bool, default=True)
 def serve(**options):
-    settings = import_module('settings')
+    settings = import_module(SETTINGS_MODULE)
     environ['DEBUG'] = '1'
 
     reload_dirs = [root]

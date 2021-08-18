@@ -1,12 +1,13 @@
 from importlib import import_module
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, PrefixLoader, pass_context, select_autoescape, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, PrefixLoader, StrictUndefined, pass_context, select_autoescape
 from starlette.templating import _TemplateResponse
 
-from ang.config import get_apps
+from ang.config import SETTINGS_MODULE, get_apps
 
-settings = import_module('settings')
+
+settings = import_module(SETTINGS_MODULE)
 
 
 @pass_context

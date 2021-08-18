@@ -4,6 +4,10 @@ from pathlib import Path
 from environs import Env
 
 
+SETTINGS_MODULE = 'core.settings'
+ROUTES_MODULE = 'core.routes'
+
+
 env = Env()
 
 root = env.path('ROOT', None) or Path.cwd()
