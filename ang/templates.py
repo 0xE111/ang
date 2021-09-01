@@ -4,7 +4,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, PrefixLoader, StrictUndefined, pass_context, select_autoescape
 from starlette.templating import _TemplateResponse
 
-from ang.config import SETTINGS_MODULE, get_apps
+from ang.config import SETTINGS_MODULE, APPS
 
 
 settings = import_module(SETTINGS_MODULE)
@@ -19,7 +19,7 @@ def url_for(context: dict, name: str, **path_params: Any) -> str:
 env = Environment(
     loader=PrefixLoader({
         app.name: FileSystemLoader(app / 'templates')
-        for app in get_apps()
+        for app in APPS
     }),
     autoescape=select_autoescape(),
     undefined=StrictUndefined,

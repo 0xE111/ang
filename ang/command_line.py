@@ -1,13 +1,26 @@
 import shutil
-from os import environ, chdir
+from importlib import import_module
+from inspect import isclass
+from os import chdir, environ
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import click
 import uvicorn
-import alembic
-import alembic.config
-from importlib import import_module
-from ang.config import SETTINGS_MODULE, root
+
+from ang.config import APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, \
+                       alembic_config
+from ang.utils.paths import walk
+from ang.builders import Builder
+
+try:
+    settings = import_module(SETTINGS_MODULE)
+except ImportError:
+    settings = None
+
+
+class MisconfigurationError(Exception):
+    pass
 
 
 @click.group()
@@ -28,16 +41,10 @@ def is_empty(path: Path) -> bool:
 def init(path: Path, force: bool):
 
     if path.exists() and (not path.is_dir() or not is_empty(path) and not force):
-        raise ValueError('Could not initialize inside non-empty folder')
+        raise FileExistsError('Could not initialize inside non-empty folder')
     shutil.copytree(Path(__file__).parent / 'template', path, dirs_exist_ok=True)
 
     chdir(path)
-    settings = import_module(SETTINGS_MODULE)
-
-    config = alembic.config.Config(path / '_alembic' / 'alembic.ini')
-    # config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
-    alembic.command.init(config, path / '_alembic', template='async')
-
     click.echo(f'Initialized empty project at {path}')
 
 
@@ -46,14 +53,13 @@ def init(path: Path, force: bool):
 @click.option('--port', type=int, default=8000)
 @click.option('--reload', type=bool, default=True)
 def serve(**options):
-    settings = import_module(SETTINGS_MODULE)
     environ['DEBUG'] = '1'
 
-    reload_dirs = [root]
+    reload_dirs = [ROOT]
     click.echo(f'Tracking changes in {[str(dir_) for dir_ in reload_dirs]}')
 
     uvicorn.run(
-        'ang.app:app',
+        'ang.server:app',
         **{
             'log_level': 'debug',
             'reload_dirs': reload_dirs,
@@ -61,6 +67,31 @@ def serve(**options):
             **options,
         },
     )
+
+
+@main.command()
+def build():
+
+    builders = import_module(f'{CORE_APP}.{BUILDERS_MODULE}').BUILDERS
+
+    with TemporaryDirectory() as build_dir:
+        build_dir = Path(build_dir)
+        for app in APPS:
+            if not (assets_dir := app / ASSETS_DIR).exists() or not assets_dir.is_dir():
+                continue
+
+            app_build_dir = build_dir / app.name
+            app_build_dir.mkdir()
+            for file in walk(assets_dir):
+                shutil.copy(file, app_build_dir / file.relative_to(assets_dir))
+
+        files = walk(build_dir)
+        for builder in builders:
+            if not isinstance(builder, Builder):
+                raise MisconfigurationError(f'Builder {builder} is not an instance of Builder class')
+
+            click.echo(f'Running {builder}')
+            files = builder(files)
 
 
 if __name__ == '__main__':
