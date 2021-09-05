@@ -5,9 +5,9 @@ from alembic.config import Config
 from environs import Env
 
 CORE_APP = 'core'
-SETTINGS_MODULE = 'settings'
-ROUTES_MODULE = 'routes'
-BUILDERS_MODULE = 'builders'
+SETTINGS_MODULE = f'{CORE_APP}.settings'
+ROUTES_MODULE = f'{CORE_APP}.routes'
+BUILDERS_MODULE = f'{CORE_APP}.builders'
 BUILD_DIR = '.build'
 ASSETS_DIR = 'assets'
 
@@ -18,12 +18,8 @@ env = Env()
 
 ROOT = env.path('ROOT', None) or Path.cwd()
 sys.path.insert(0, str(ROOT))
+DEBUG = env.bool('DEBUG', False)
 
 alembic_config = Config(ALEMBIC_INI_PATH)
-# breakpoint()
-
 
 APPS = [path for path in ROOT.iterdir() if path.is_dir() and not path.name.startswith('_')]
-
-# def get_apps() -> list[Path]:
-#     return [path for path in root.iterdir() if path.is_dir() and not path.name.startswith('_')]

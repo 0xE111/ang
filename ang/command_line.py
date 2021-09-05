@@ -25,8 +25,18 @@ class MisconfigurationError(Exception):
 
 @click.group()
 def main():
-    # settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
-    # settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    # try:
+    #     settings = import_module(SETTINGS_MODULE)
+    # except ImportError:
+    #     settings = None
+
+    # if settings:
+    #     assert isinstance(settings.STATIC_DIR, Path)
+    #     settings.STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
+    #     assert isinstance(settings.UPLOAD_DIR, Path)
+    #     settings.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
     pass
 
 
@@ -72,7 +82,7 @@ def serve(**options):
 @main.command()
 def build():
 
-    builders = import_module(f'{CORE_APP}.{BUILDERS_MODULE}').BUILDERS
+    builders = import_module(BUILDERS_MODULE).BUILDERS
 
     with TemporaryDirectory() as build_dir:
         build_dir = Path(build_dir)
@@ -85,7 +95,7 @@ def build():
             for file in walk(assets_dir):
                 shutil.copy(file, app_build_dir / file.relative_to(assets_dir))
 
-        files = walk(build_dir)
+        files = (file.relative_to(build_dir) for file in walk(build_dir))
         for builder in builders:
             if not isinstance(builder, Builder):
                 raise MisconfigurationError(f'Builder {builder} is not an instance of Builder class')

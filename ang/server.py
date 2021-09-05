@@ -5,7 +5,7 @@ from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 from importlib import import_module
 
-from ang.config import ROUTES_MODULE, SETTINGS_MODULE, env
+from ang.config import ROUTES_MODULE, SETTINGS_MODULE, DEBUG
 
 
 settings = import_module(SETTINGS_MODULE)
@@ -13,15 +13,15 @@ logging.config.dictConfig(settings.LOGGING)
 log = logging.getLogger(__name__)
 
 
-if debug := env.bool('DEBUG', False):
+if DEBUG:
     log.critical('Running application in DEBUG mode')
 
 routes = import_module(ROUTES_MODULE)
 
 app = Starlette(
-    debug=debug,
+    debug=DEBUG,
     routes=routes.ROUTES + ([
-        Mount('/static', StaticFiles(directory=settings.STATIC_DIR), name='static')
-    ] if debug else []),
+        Mount(settings.STATIC_URL, StaticFiles(directory=settings.STATIC_DIR), name='static')
+    ] if DEBUG else []),
     middleware=settings.MIDDLEWARE,
 )

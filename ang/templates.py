@@ -4,7 +4,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader, PrefixLoader, StrictUndefined, pass_context, select_autoescape
 from starlette.templating import _TemplateResponse
 
-from ang.config import SETTINGS_MODULE, APPS
+from ang.config import SETTINGS_MODULE, APPS, DEBUG
 
 
 settings = import_module(SETTINGS_MODULE)
@@ -26,6 +26,7 @@ env = Environment(
 )
 env.globals.update({
     'url_for': url_for,
+    'DEBUG': DEBUG,
     **settings.CONTEXT,
 })
 
