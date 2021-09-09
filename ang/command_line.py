@@ -1,6 +1,5 @@
 import shutil
 from importlib import import_module
-from inspect import isclass
 from os import chdir, environ
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,10 +7,10 @@ from tempfile import TemporaryDirectory
 import click
 import uvicorn
 
-from ang.config import APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, \
+from ang.builders import Builder
+from ang.config import APPS, APP_MODULE, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, \
                        alembic_config
 from ang.utils.paths import walk
-from ang.builders import Builder
 
 try:
     settings = import_module(SETTINGS_MODULE)
@@ -69,7 +68,7 @@ def serve(**options):
     click.echo(f'Tracking changes in {[str(dir_) for dir_ in reload_dirs]}')
 
     uvicorn.run(
-        'ang.server:app',
+        f'{APP_MODULE}:app',
         **{
             'log_level': 'debug',
             'reload_dirs': reload_dirs,
