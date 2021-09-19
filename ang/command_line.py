@@ -1,15 +1,16 @@
 import shutil
+import sys
 from importlib import import_module
 from os import chdir, environ
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import alembic.config
 import click
 import uvicorn
 
 from ang.builders import Builder
-from ang.config import APPS, APP_MODULE, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, \
-                       alembic_config
+from ang.config import APP_MODULE, APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, ALEMBIC_DIR
 from ang.utils.paths import walk
 
 try:
@@ -101,6 +102,61 @@ def build():
 
             click.echo(f'Running {builder}')
             files = builder(files)
+
+
+@main.command(context_settings=dict(ignore_unknown_options=True))
+@click.argument('app', type=str)
+@click.argument('alembic_args', nargs=-1, type=click.UNPROCESSED)
+def db(app: str, alembic_args: list):
+
+    if app not in {app.name for app in APPS}:
+        raise MisconfigurationError(f'Unknown app "{app}", available apps: {APPS}')
+
+    if not alembic_args:
+        raise MisconfigurationError('Missing alembic args')
+
+    lib_dir = Path(__file__).resolve().parent
+    alembic_cli = alembic.config.CommandLine()
+    options = alembic_cli.parser.parse_args(alembic_args)
+
+    # use per-project alembic.ini file if it exists,
+    # otherwise fallback to default one
+    ini_path = Path(options.config)
+    if not ini_path.is_absolute():
+        ini_path = ROOT / ini_path
+    if not ini_path.exists():
+        ini_path = lib_dir / 'alembic.ini'
+    click.echo(f'Alembic.ini location: {ini_path}')
+
+    config = alembic.config.Config(
+        file_=ini_path,
+        ini_section=options.name,
+        cmd_opts=options,
+    )
+
+    # use config-defined database url if exists,
+    # otherwise fallback to settings.DATABASE_URL
+    option = 'sqlalchemy.url'
+    if not config.get_main_option(option):
+        config.set_main_option(option, settings.DATABASE_URL)
+
+    # use per-app alembic folder if it exists,
+    # otherwise fallback to default one
+    if (script_location := config.get_main_option('script_location')):
+        click.echo(f'Ignoring {script_location=}')
+
+    script_location = Path(ROOT / CORE_APP / ALEMBIC_DIR)
+    if not (script_location / 'env.py').exists():
+        script_location = lib_dir / ALEMBIC_DIR
+    config.set_main_option('script_location', str(script_location.resolve()))
+    click.echo(f'Script location: {script_location}')
+
+    versions_location = ROOT / app / MIGRATIONS_DIR
+    click.echo(f'Version locations: {versions_location}')
+    versions_location.mkdir(parents=True, exist_ok=True)
+    config.set_main_option('version_locations', str(versions_location.resolve()))
+
+    exit(alembic_cli.run_cmd(config, options))
 
 
 if __name__ == '__main__':

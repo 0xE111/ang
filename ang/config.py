@@ -13,15 +13,14 @@ BUILD_DIR = '.build'
 ASSETS_DIR = 'assets'
 
 ALEMBIC_INI_PATH = Path(__file__).parent / 'alembic.ini'
-MIGRATIONS_DIR = 'migrations'
+ALEMBIC_DIR = Path('alembic')
+MIGRATIONS_DIR = ALEMBIC_DIR / 'versions'
 
 env = Env()
 
 ROOT = env.path('ROOT', None) or Path.cwd()
 sys.path.insert(0, str(ROOT))
 DEBUG = env.bool('DEBUG', False)
-
-alembic_config = Config(ALEMBIC_INI_PATH)
 
 settings = import_module(SETTINGS_MODULE)
 logging.config.dictConfig(settings.LOGGING)

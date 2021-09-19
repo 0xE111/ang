@@ -1,7 +1,7 @@
 from importlib import import_module
 
 import humps
-from sqlalchemy import BigInteger, Column
+from sqlalchemy import MetaData, BigInteger, Column
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import sessionmaker, synonym
@@ -39,8 +39,19 @@ class Base:
         return Column(BigInteger, primary_key=True, index=True)
 
 
-Model = declarative_base(cls=Base)
+convention = {
+    'all_column_names': lambda constraint, table: '_'.join([
+        column.name for column in constraint.columns.values()
+    ]),
+    'ix': 'ix__%(table_name)s__%(all_column_names)s',
+    'uq': 'uq__%(table_name)s__%(all_column_names)s',
+    'ck': 'ck__%(table_name)s__%(constraint_name)s',
+    'fk': 'fk__%(table_name)s__%(all_column_names)s__%(referred_table_name)s',
+    'pk': 'pk__%(table_name)s'
+}
+metadata = MetaData(naming_convention=convention)
 
+Model = declarative_base(cls=Base, metadata=metadata)
 
 settings = import_module(SETTINGS_MODULE)
 engine = create_async_engine(settings.DATABASE_URL, echo=True)
