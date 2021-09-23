@@ -101,7 +101,7 @@ def build():
                 raise MisconfigurationError(f'Builder {builder} is not an instance of Builder class')
 
             click.echo(f'Running {builder}')
-            files = builder(files)
+            files = builder(files, build_dir)
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True))
