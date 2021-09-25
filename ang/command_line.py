@@ -9,14 +9,9 @@ import alembic.config
 import click
 import uvicorn
 
-from ang.builders import Builder
-from ang.config import APP_MODULE, APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, ALEMBIC_DIR
-from ang.utils.paths import walk
-
-try:
-    settings = import_module(SETTINGS_MODULE)
-except ImportError:
-    settings = None
+from .builders import Builder
+from .config import APP_MODULE, APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, ALEMBIC_DIR, settings
+from .utils.paths import walk
 
 
 class MisconfigurationError(Exception):
