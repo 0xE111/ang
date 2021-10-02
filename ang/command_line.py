@@ -4,13 +4,14 @@ from importlib import import_module
 from os import chdir, environ
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from importlib import import_module
 
 import alembic.config
 import click
 import uvicorn
 
-from .builders import Builder
-from .config import APP_MODULE, APPS, ASSETS_DIR, BUILDERS_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, SETTINGS_MODULE, ALEMBIC_DIR, settings
+from .build import Builder
+from .config import APP_MODULE, APPS, ASSETS_DIR, BUILD_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, ALEMBIC_DIR, settings
 from .utils.paths import walk
 
 
@@ -77,7 +78,7 @@ def serve(**options):
 @main.command()
 def build():
 
-    builders = import_module(BUILDERS_MODULE).BUILDERS
+    actions = import_module(BUILD_MODULE).BUILD_ACTIONS
 
     with TemporaryDirectory() as build_dir:
         build_dir = Path(build_dir)
@@ -91,7 +92,7 @@ def build():
                 shutil.copy(file, app_build_dir / file.relative_to(assets_dir))
 
         files = (file.relative_to(build_dir) for file in walk(build_dir))
-        for builder in builders:
+        for builder in actions:
             if not isinstance(builder, Builder):
                 raise MisconfigurationError(f'Builder {builder} is not an instance of Builder class')
 

@@ -7,8 +7,7 @@ from environs import Env
 CORE_APP = 'core'
 APP_MODULE = f'{CORE_APP}.app'
 SETTINGS_MODULE = f'{CORE_APP}.settings'
-BUILDERS_MODULE = f'{CORE_APP}.builders'
-BUILD_DIR = '.build'
+BUILD_MODULE = f'{CORE_APP}.build'
 ASSETS_DIR = 'assets'
 
 ALEMBIC_INI_PATH = Path(__file__).parent / 'alembic.ini'

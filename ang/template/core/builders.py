@@ -1,9 +1,9 @@
 from core.settings import STATIC_DIR
 
-from ang.builders import Clear, MoveTo, SkipInternalFiles
+from ang.build import Clear, MoveTo, SkipInternalFiles
 
 
-BUILDERS = [
+BUILD_ACTIONS = [
     SkipInternalFiles(),
     Clear(STATIC_DIR),
     MoveTo(STATIC_DIR),

@@ -8,6 +8,7 @@ ROOT = Path(__file__).parent.parent
 DATABASE_URL = env('DATABASE_URL', 'postgresql+asyncpg://postgres:postgres@localhost/db')
 STATIC_DIR = env.path('STATIC_DIR', str(ROOT / '.data' / 'static'))
 UPLOAD_DIR = env.path('UPLOAD_DIR', str(ROOT / '.data' / 'upload'))
+STATIC_URL = '/static'
 
 MIDDLEWARE = []
 
