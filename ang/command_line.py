@@ -100,15 +100,18 @@ def build():
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True))
-@click.argument('app', type=str)
+# @click.argument('app', type=str)
 @click.argument('alembic_args', nargs=-1, type=click.UNPROCESSED)
-def db(app: str, alembic_args: list):
+def db(alembic_args: list):
 
-    if app not in {app.name for app in APPS}:
-        raise MisconfigurationError(f'Unknown app "{app}", available apps: {APPS}')
+    # if app not in {app.name for app in APPS}:
+    #     raise MisconfigurationError(f'Unknown app "{app}", available apps: {APPS}')
 
     if not alembic_args:
         raise MisconfigurationError('Missing alembic args')
+
+    if not settings:
+        raise MisconfigurationError('Unable to load settings')
 
     lib_dir = Path(__file__).resolve().parent
     alembic_cli = alembic.config.CommandLine()
@@ -134,6 +137,7 @@ def db(app: str, alembic_args: list):
     option = 'sqlalchemy.url'
     if not config.get_main_option(option):
         config.set_main_option(option, settings.DATABASE_URL)
+    click.echo(f'Database DSN: {config.get_main_option(option)}')
 
     # use per-app alembic folder if it exists,
     # otherwise fallback to default one
@@ -146,10 +150,13 @@ def db(app: str, alembic_args: list):
     config.set_main_option('script_location', str(script_location.resolve()))
     click.echo(f'Script location: {script_location}')
 
-    versions_location = ROOT / app / MIGRATIONS_DIR
+    versions_location = ROOT / CORE_APP / MIGRATIONS_DIR
     click.echo(f'Version locations: {versions_location}')
     versions_location.mkdir(parents=True, exist_ok=True)
     config.set_main_option('version_locations', str(versions_location.resolve()))
+
+    for app in APPS:
+        import_module(f'{app.name}.models')
 
     exit(alembic_cli.run_cmd(config, options))
 
