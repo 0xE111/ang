@@ -162,5 +162,13 @@ def db(alembic_args: list):
     exit(alembic_cli.run_cmd(config, options))
 
 
+@main.command()
+def shell():
+    import IPython
+    # TODO: from IPython.lib.deepreload import reload
+    IPython.start_ipython(argv=tuple())
+    raise SystemExit
+
+
 if __name__ == '__main__':
     main()
