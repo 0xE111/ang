@@ -1,11 +1,11 @@
 
+from logging import getLogger
+
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 
-
-from ang.config import settings, DEBUG
-from logging import getLogger
+from ang.config import DEBUG, settings
 
 log = getLogger(__name__)
 

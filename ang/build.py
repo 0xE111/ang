@@ -1,8 +1,5 @@
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator, Iterable, List
 import shutil
-from ang.config import settings
 
 
 def is_dev_file(file: Path) -> bool:
