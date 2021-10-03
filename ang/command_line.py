@@ -4,13 +4,11 @@ from importlib import import_module
 from os import chdir, environ
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from importlib import import_module
 
 import alembic.config
 import click
 import uvicorn
 
-from .build import Builder
 from .config import APP_MODULE, APPS, ASSETS_DIR, BUILD_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, ALEMBIC_DIR, settings
 from .utils.paths import walk
 
@@ -62,8 +60,6 @@ def serve(**options):
     environ['DEBUG'] = '1'
 
     reload_dirs = [ROOT]
-    click.echo(f'Tracking changes in {[str(dir_) for dir_ in reload_dirs]}')
-
     uvicorn.run(
         f'{APP_MODULE}:app',
         **{
@@ -77,27 +73,20 @@ def serve(**options):
 
 @main.command()
 def build():
+    build_fn = import_module(BUILD_MODULE).build
 
-    actions = import_module(BUILD_MODULE).BUILD_ACTIONS
-
-    with TemporaryDirectory() as build_dir:
-        build_dir = Path(build_dir)
+    with TemporaryDirectory() as temp_dir:
+        temp_dir = Path(temp_dir)
         for app in APPS:
             if not (assets_dir := app / ASSETS_DIR).exists() or not assets_dir.is_dir():
                 continue
 
-            app_build_dir = build_dir / app.name
-            app_build_dir.mkdir()
+            app_temp_dir = temp_dir / app.name
+            app_temp_dir.mkdir()
             for file in walk(assets_dir):
-                shutil.copy(file, app_build_dir / file.relative_to(assets_dir))
+                shutil.copy(file, app_temp_dir / file.relative_to(assets_dir))
 
-        files = (file.relative_to(build_dir) for file in walk(build_dir))
-        for builder in actions:
-            if not isinstance(builder, Builder):
-                raise MisconfigurationError(f'Builder {builder} is not an instance of Builder class')
-
-            click.echo(f'Running {builder}')
-            files = builder(files, build_dir)
+        build_fn(temp_dir)
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True))
@@ -138,7 +127,7 @@ def db(alembic_args: list):
     option = 'sqlalchemy.url'
     if not config.get_main_option(option):
         config.set_main_option(option, settings.DATABASE_URL)
-    click.echo(f'Database DSN: {config.get_main_option(option)}')
+    click.echo(f'Database URL: {config.get_main_option(option)}')
 
     # use per-app alembic folder if it exists,
     # otherwise fallback to default one
