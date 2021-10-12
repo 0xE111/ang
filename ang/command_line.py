@@ -11,10 +11,7 @@ import uvicorn
 
 from .config import APP_MODULE, APPS, ASSETS_DIR, BUILD_MODULE, CORE_APP, MIGRATIONS_DIR, ROOT, ALEMBIC_DIR, settings
 from .utils.paths import walk
-
-
-class MisconfigurationError(Exception):
-    pass
+from .errors import MisconfigurationError
 
 
 @click.group()
@@ -90,12 +87,8 @@ def build():
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True))
-# @click.argument('app', type=str)
 @click.argument('alembic_args', nargs=-1, type=click.UNPROCESSED)
 def db(alembic_args: list):
-
-    # if app not in {app.name for app in APPS}:
-    #     raise MisconfigurationError(f'Unknown app "{app}", available apps: {APPS}')
 
     if not alembic_args:
         raise MisconfigurationError('Missing alembic args')

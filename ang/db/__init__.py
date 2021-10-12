@@ -38,6 +38,9 @@ class Base:
 
         return Column(BigInteger, primary_key=True, index=True)
 
+    def __repr__(self):
+        return f'<{str(self.__class__)} #{self.id}>'
+
 
 convention = {
     'all_column_names': lambda constraint, table: '_'.join([
@@ -57,3 +60,5 @@ settings = import_module(SETTINGS_MODULE)
 engine = create_async_engine(settings.DATABASE_URL, echo=True)
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 # TODO: await engine.dispose() - https://www.starlette.io/events/
+
+

@@ -3,6 +3,7 @@ from pathlib import Path
 import logging
 from importlib import import_module
 from environs import Env
+from .errors import MisconfigurationError
 
 CORE_APP = 'core'
 APP_MODULE = f'{CORE_APP}.app'
@@ -31,3 +32,5 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 APPS = [path for path in ROOT.iterdir() if path.is_dir() and not path.name.startswith('_')]
+if not any(app.name == CORE_APP for app in APPS):
+    raise MisconfigurationError(f'App "{CORE_APP}" not found in "{ROOT}"')
