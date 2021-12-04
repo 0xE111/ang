@@ -70,11 +70,14 @@ def serve(**options):
 
 @main.command()
 def build():
+    click.echo('Building')
     build_fn = import_module(BUILD_MODULE).build
 
     with TemporaryDirectory() as temp_dir:
         temp_dir = Path(temp_dir)
+        # TODO: move to "collect_assets" build action
         for app in APPS:
+            click.echo(f'Scanning {app}')
             if not (assets_dir := app / ASSETS_DIR).exists() or not assets_dir.is_dir():
                 continue
 
@@ -84,6 +87,8 @@ def build():
                 shutil.copy(file, app_temp_dir / file.relative_to(assets_dir))
 
         build_fn(temp_dir)
+
+    click.echo('Build completed')
 
 
 @main.command(context_settings=dict(ignore_unknown_options=True))

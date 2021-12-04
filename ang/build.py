@@ -6,7 +6,7 @@ def is_dev_file(file: Path) -> bool:
     return file.name[0] in {'_', '.'}
 
 
-def remove(path: Path, if_: callable = lambda _: True):
+def clear(path: Path, if_: callable = lambda _: True):
     if not path.exists():
         return
 
@@ -20,7 +20,7 @@ def remove(path: Path, if_: callable = lambda _: True):
             if if_(child):
                 child.unlink()
         else:
-            remove(child, if_)
+            clear(child, if_)
             if not any(child.iterdir()):
                 child.rmdir()
 

@@ -16,7 +16,8 @@ class App(Starlette):
         if DEBUG:
             log.critical('Debug mode ON')
         kwargs.setdefault('debug', DEBUG)
-        kwargs.setdefault('routes', []).append(
-            Mount(settings.STATIC_URL, StaticFiles(directory=settings.BUILD_DIR), name='static')
-        )
+        kwargs.setdefault('routes', []).extend([
+            Mount(settings.STATIC_URL, StaticFiles(directory=settings.BUILD_DIR), name='static'),
+            Mount(settings.UPLOADS_URL, StaticFiles(directory=settings.UPLOADS_DIR), name='uploads'),
+        ])
         super().__init__(*args, **kwargs)
